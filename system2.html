@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asturi Accounting System - Assets Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #f5f7fa;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 320px;
+            background: #ffffff;
+            border-right: 1px solid #e1e5e9;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #e1e5e9;
+            position: relative;
+        }
+        
+        .system-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 4px;
+            cursor: pointer;
+            transition: color 0.2s;
+            position: relative;
+        }
+        
+        .system-title:hover {
+            color: #4285f4;
+        }
+        
+        .system-title::after {
+            content: "▼";
+            font-size: 10px;
+            margin-left: 8px;
+            transition: transform 0.3s;
+        }
+        
+        .system-title.active::after {
+            transform: rotate(180deg);
+        }
+        
+        .system-subtitle {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        /* Secondary Sidebar for System Menu */
+        .system-sidebar {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .system-sidebar.show {
+            max-height: 300px;
+        }
+
+        .system-menu-item {
+            padding: 12px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 14px;
+            color: #2c3e50;
+        }
+
+        .system-menu-item:hover {
+            background: #f8f9fa;
+            color: #4285f4;
+        }
+
+        .system-menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .system-menu-item .menu-icon {
+            display: inline-block;
+            width: 20px;
+            margin-right: 10px;
+            text-align: center;
+            font-size: 12px;
+        }
+        
+        .add-topic-btn {
+            margin: 15px;
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .add-topic-btn:hover {
+            background: #3367d6;
+        }
+        
+        .reports-section {
+            flex: 1;
+            padding: 10px 0;
+        }
+        
+        .report-category {
+            margin-bottom: 8px;
+        }
+        
+        .category-header {
+            display: flex;
+            align-items: center;
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .category-header:hover {
+            background: #f8f9fa;
+        }
+        
+        .category-header.active {
+            background: #e3f2fd;
+            border-left: 3px solid #4285f4;
+        }
+        
+        .expand-icon {
+            margin-right: 8px;
+            font-size: 12px;
+            transition: transform 0.2s;
+            width: 12px;
+            height: 12px;
+            border-left: 6px solid #666;
+            border-top: 6px solid transparent;
+            border-bottom: 6px solid transparent;
+        }
+        
+        .expand-icon.expanded {
+            transform: rotate(90deg);
+        }
+        
+        .category-title {
+            flex: 1;
+            font-size: 13px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        
+        .category-date {
+            font-size: 11px;
+            color: #7f8c8d;
+            margin-top: 2px;
+        }
+        
+        .report-items {
+            display: none;
+            padding-left: 35px;
+        }
+        
+        .report-items.expanded {
+            display: block;
+        }
+        
+        .report-item {
+            padding: 6px 15px;
+            margin: 2px 0;
+            font-size: 12px;
+            color: #666;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        
+        .report-item:hover {
+            background: #f0f0f0;
+            color: #4285f4;
+        }
+        
+        .report-item.active {
+            background: #4285f4;
+            color: white;
+        }
+
+        /* Nested sub-reports */
+        .sub-report-category {
+            margin-bottom: 4px;
+        }
+
+        .sub-category-header {
+            display: flex;
+            align-items: center;
+            padding: 4px 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 11px;
+        }
+
+        .sub-category-header:hover {
+            background: #f0f0f0;
+        }
+
+        .sub-category-title {
+            flex: 1;
+            font-size: 11px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .sub-report-items {
+            display: none;
+            padding-left: 20px;
+        }
+
+        .sub-report-items.expanded {
+            display: block;
+        }
+
+        .sub-report-item {
+            padding: 4px 10px;
+            margin: 1px 0;
+            font-size: 11px;
+            color: #777;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.2s;
+        }
+
+        .sub-report-item:hover {
+            background: #f0f0f0;
+            color: #4285f4;
+        }
+
+        .sub-report-item.active {
+            background: #4285f4;
+            color: white;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            overflow: hidden;
+        }
+        
+        .content-header {
+            padding: 20px 30px;
+            border-bottom: 1px solid #e1e5e9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        
+        .content-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+        
+        .content-subtitle {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .header-btn {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            color: #666;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .header-btn.primary {
+            background: #4285f4;
+            color: white;
+            border-color: #4285f4;
+        }
+        
+        .header-btn:hover {
+            border-color: #4285f4;
+            color: #4285f4;
+        }
+        
+        .header-btn.primary:hover {
+            background: #3367d6;
+        }
+        
+        .content-body {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 40px;
+            overflow: hidden;
+        }
+        
+        .no-report-icon {
+            width: 80px;
+            height: 80px;
+            background: #f5f5f5;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .no-report-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .no-report-text {
+            color: #7f8c8d;
+            text-align: center;
+            line-height: 1.5;
+        }
+        
+        /* Report Content */
+        .report-content {
+            padding: 30px;
+            max-width: 100%;
+            overflow-y: auto;
+            display: none;
+            flex: 1;
+        }
+        
+        .report-content.active {
+            display: block;
+        }
+        
+        .report-content iframe {
+            width: 100%;
+            min-height: 800px;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+        }
+        
+        /* Report Link Cards */
+        .report-links {
+            padding: 20px 0;
+        }
+        
+        .report-link-card {
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            padding: 25px;
+            min-width: 280px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            margin-bottom: 15px;
+        }
+        
+        .report-link-card:hover {
+            border-color: #4285f4;
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .link-icon {
+            width: 50px;
+            height: 50px;
+            background: #f8f9fa;
+            border: 2px solid #4285f4;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: #4285f4;
+            margin-bottom: 15px;
+        }
+        
+        .report-link-card h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .report-link-card p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        .link-text {
+            color: #4285f4;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        /* Navigation bar for embedded reports */
+        .report-navigation {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #dee2e6;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .nav-link {
+            color: #4285f4;
+            text-decoration: none;
+            font-size: 14px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            background: #e3f2fd;
+        }
+
+        .nav-separator {
+            color: #6c757d;
+        }
+
+        .cards-grid {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        /* Iframe Container */
+        .iframe-container {
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+        }
+
+        .iframe-container iframe {
+            width: 100%;
+            height: calc(100vh - 120px);
+            border: none;
+            display: block;
+        }
+
+        /* Print button for reports */
+        .print-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .print-btn:hover {
+            background: #218838;
+        }
+
+        /* Overlay for closing system sidebar */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: transparent;
+            z-index: 999;
+            display: none;
+        }
+
+        .overlay.show {
+            display: block;
+        }
+
+        /* Special styling for asset management */
+        .asset-status {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+
+        .asset-status.completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .asset-status.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="overlay" onclick="hideSystemSidebar()"></div>
+    
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="system-title" onclick="toggleSystemSidebar()" id="systemTitle">Asturi Accounting System</div>
+            <div class="system-subtitle">Assets Management Edition</div>
+            
+            <!-- System Navigation Sidebar -->
+            <div class="system-sidebar" id="systemSidebar">
+                <div class="system-menu-item" onclick="openSystem1()">
+                    <span class="menu-icon">📊</span>
+                    System 1 - Reports Management
+                </div>
+                <div class="system-menu-item" onclick="openSystemSettings()">
+                    <span class="menu-icon">⚙️</span>
+                    System Settings
+                </div>
+                <div class="system-menu-item" onclick="openUserManagement()">
+                    <span class="menu-icon">👥</span>
+                    User Management
+                </div>
+                <div class="system-menu-item" onclick="openSystemInfo()">
+                    <span class="menu-icon">ℹ️</span>
+                    System Information
+                </div>
+                <div class="system-menu-item" onclick="openHelp()">
+                    <span class="menu-icon">❓</span>
+                    Help & Support
+                </div>
+            </div>
+        </div>
+        
+        <button class="add-topic-btn">+ Add Asset Category</button>
+        
+        <div class="reports-section">
+            <!-- ASSETS - Main Category -->
+            <div class="report-category">
+                <div class="category-header" onclick="toggleCategory('assets-main')">
+                    <span class="expand-icon"></span>
+                    <div>
+                        <div class="category-title">ASSETS</div>
+                        <div class="category-date">Aug 27, 2025, 10:30 AM</div>
+                    </div>
+                </div>
+                <div class="report-items" id="assets-main">
+                    <!-- LIST OF ASSETS -->
+                    <div class="report-item" onclick="openAssetListReport()">
+                        LIST OF ASSETS
+                        <span class="asset-status completed">✓ 19 Items</span>
+                    </div>
+                    
+                    <!-- ASSET LISTING -->
+                    <div class="report-item" onclick="openAssetDetailReport()">
+                        ASSET LISTING
+                        <span class="asset-status pending">Details Pending</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VEHICLE FOR MAINTENANCE & SERVICING - Main Category -->
+            <div class="report-category">
+                <div class="category-header" onclick="toggleCategory('vehicle-maintenance')">
+                    <span class="expand-icon"></span>
+                    <div>
+                        <div class="category-title">VEHICLE FOR MAINTENANCE & SERVICING</div>
+                        <div class="category-date">Aug 27, 2025, 10:30 AM</div>
+                    </div>
+                </div>
+                <div class="report-items" id="vehicle-maintenance">
+                    <div class="report-item" onclick="openVehicleMaintenanceReport('ASTURI RESOURCE .html', 'Asturi Resources - Maintenance')">ASTURI RESOURCES</div>
+                    <div class="report-item" onclick="openVehicleMaintenanceReport('STURI TRUCK AND CRANE MAINTENANCE.html', 'Asturi Truck & Crane - Maintenance')">ASTURI TRUCK & CRANE</div>
+                    <div class="report-item" onclick="openVehicleMaintenanceReport('OTHER SERVICE.html', 'Personal Vehicles - Maintenance')">PERSONAL VEHICLES</div>
+                </div>
+            </div>
+
+            <!-- VEHICLE FOR ROAD TAX & INSURANCES - Main Category -->
+            <div class="report-category">
+                <div class="category-header" onclick="toggleCategory('vehicle-roadtax-insurance')">
+                    <span class="expand-icon"></span>
+                    <div>
+                        <div class="category-title">VEHICLE FOR ROAD TAX & INSURANCES</div>
+                        <div class="category-date">Aug 27, 2025, 10:30 AM</div>
+                    </div>
+                </div>
+                <div class="report-items" id="vehicle-roadtax-insurance">
+                    <div class="report-item" onclick="openVehicleRoadTaxReport('ROAD TAX ASPURI RESOURCE.html', 'Asturi Resources - Road Tax & Insurance')">ASTURI RESOURCES</div>
+                    <div class="report-item" onclick="openVehicleRoadTaxReport('TRUCK AND CRANE ASTURI ROAD TAX.html', 'Asturi Truck & Crane - Road Tax & Insurance')">ASTURI TRUCK & CRANE</div>
+                    <div class="report-item" onclick="openVehicleRoadTaxReport('ROAD TAX OTHER.html', 'Personal Vehicles - Road Tax & Insurance')">PERSONAL VEHICLES</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div class="content-header">
+            <div>
+                <div class="content-title">Asset Management Dashboard</div>
+                <div class="content-subtitle">Manage company assets, vehicles, and maintenance records</div>
+            </div>
+            <div class="header-buttons">
+                <button class="header-btn print-btn" onclick="printCurrentReport()" style="display: none;">Print Report</button>
+                <button class="header-btn">Upload Asset Data</button>
+                <button class="header-btn primary">Export Assets</button>
+                <button class="header-btn">Asset Statistics</button>
+            </div>
+        </div>
+        
+        <div class="content-body" id="no-report-view">
+            <div class="no-report-icon">
+                <span style="font-size: 16px; color: #999; font-weight: 600;">📋</span>
+            </div>
+            <div class="no-report-title">Asset Management System</div>
+            <div class="no-report-text">
+                Select an asset category from the sidebar to view details or<br>
+                manage asset listings and vehicle records
+            </div>
+        </div>
+        
+        <!-- Asset List Report Content -->
+        <div class="report-content" id="asset-list-overview">
+            <div class="report-navigation">
+                <div class="nav-links">
+                    <a href="#" class="nav-link" onclick="showDashboard()">Back to Dashboard</a>
+                    <span class="nav-separator">|</span>
+                    <span style="color: #666; font-weight: 500;">List of Assets</span>
+                </div>
+            </div>
+            
+            <div class="report-links">
+                <h2>List of Assets</h2>
+                <p style="margin-bottom: 30px; color: #666;">Complete inventory of company assets (19 items listed):</p>
+                
+                <div class="cards-grid">
+                    <div class="report-link-card" onclick="openExternalReport('LIST OF ASSET .html', 'Complete Asset Inventory')">
+                        <div class="link-icon">📝</div>
+                        <h3>Complete Asset Inventory</h3>
+                        <p>Full listing of all 19 company assets with basic information</p>
+                        <span class="link-text">View Asset List</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Asset Details Report Content -->
+        <div class="report-content" id="asset-details-overview">
+            <div class="report-navigation">
+                <div class="nav-links">
+                    <a href="#" class="nav-link" onclick="showDashboard()">Back to Dashboard</a>
+                    <span class="nav-separator">|</span>
+                    <span style="color: #666; font-weight: 500;">Asset Listing Details</span>
+                </div>
+            </div>
+            
+            <div class="report-links">
+                <h2>Asset Listing - Detailed Information</h2>
+                <p style="margin-bottom: 30px; color: #666;">Comprehensive details for all 19 listed assets (to be completed by Asturi staff):</p>
+                
+                <div class="cards-grid">
+                    <div class="report-link-card" onclick="openExternalReport('ASSET LISTING.html', 'Asset Detailed Information')">
+                        <div class="link-icon">📊</div>
+                        <h3>Asset Detailed Information</h3>
+                        <p>Complete asset details including specifications, values, and status - awaiting staff input</p>
+                        <span class="link-text">View Details Form</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Iframe Container for External Reports -->
+        <div class="report-content" id="iframe-content">
+            <!-- Dynamic iframe content will be inserted here -->
+        </div>
+    </div>
+    
+    <script>
+        // System Sidebar Functions
+        function toggleSystemSidebar() {
+            const systemSidebar = document.getElementById('systemSidebar');
+            const overlay = document.getElementById('overlay');
+            const systemTitle = document.getElementById('systemTitle');
+            
+            if (systemSidebar.classList.contains('show')) {
+                hideSystemSidebar();
+            } else {
+                systemSidebar.classList.add('show');
+                overlay.classList.add('show');
+                systemTitle.classList.add('active');
+            }
+        }
+        
+        function hideSystemSidebar() {
+            const systemSidebar = document.getElementById('systemSidebar');
+            const overlay = document.getElementById('overlay');
+            const systemTitle = document.getElementById('systemTitle');
+            
+            systemSidebar.classList.remove('show');
+            overlay.classList.remove('show');
+            systemTitle.classList.remove('active');
+        }
+        
+        // System Menu Functions
+        function openSystem1() {
+            window.location.href = 'index.html';
+            hideSystemSidebar();
+        }
+        
+        function openSystemSettings() {
+            alert('Opening System Settings...');
+            hideSystemSidebar();
+        }
+        
+        function openUserManagement() {
+            alert('Opening User Management...');
+            hideSystemSidebar();
+        }
+        
+        function openSystemInfo() {
+            alert('Opening System Information...');
+            hideSystemSidebar();
+        }
+        
+        function openHelp() {
+            alert('Opening Help & Support...');
+            hideSystemSidebar();
+        }
+
+        function toggleCategory(categoryId) {
+            const items = document.getElementById(categoryId);
+            const header = items.previousElementSibling;
+            const icon = header.querySelector('.expand-icon');
+            
+            if (items.classList.contains('expanded')) {
+                items.classList.remove('expanded');
+                icon.style.transform = 'rotate(0deg)';
+                header.classList.remove('active');
+            } else {
+                items.classList.add('expanded');
+                icon.style.transform = 'rotate(90deg)';
+                header.classList.add('active');
+            }
+        }
+
+        function toggleSubCategory(subCategoryId) {
+            const items = document.getElementById(subCategoryId);
+            const header = items.previousElementSibling;
+            const icon = header.querySelector('.expand-icon');
+            
+            if (items.classList.contains('expanded')) {
+                items.classList.remove('expanded');
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                items.classList.add('expanded');
+                icon.style.transform = 'rotate(90deg)';
+            }
+        }
+        
+        function selectReport(reportId, clickedElement) {
+            // Hide system sidebar if open
+            hideSystemSidebar();
+            
+            // Hide no report view
+            document.getElementById('no-report-view').style.display = 'none';
+            
+            // Hide all report content
+            const allReports = document.querySelectorAll('.report-content');
+            allReports.forEach(report => report.classList.remove('active'));
+            
+            // Show selected report
+            const selectedReport = document.getElementById(reportId);
+            if (selectedReport) {
+                selectedReport.classList.add('active');
+            }
+            
+            // Update active state in sidebar
+            const allItems = document.querySelectorAll('.report-item, .sub-report-item');
+            allItems.forEach(item => item.classList.remove('active'));
+            
+            if (clickedElement) {
+                clickedElement.classList.add('active');
+            }
+            
+            // Hide print button for overview pages
+            const printBtn = document.querySelector('.print-btn');
+            if (printBtn) {
+                printBtn.style.display = 'none';
+            }
+        }
+        
+        function openAssetListReport() {
+            selectReport('asset-list-overview', event.target);
+        }
+        
+        function openAssetDetailReport() {
+            selectReport('asset-details-overview', event.target);
+        }
+        
+        function showDashboard() {
+            // Hide system sidebar if open
+            hideSystemSidebar();
+            
+            // Hide all report content
+            const allReports = document.querySelectorAll('.report-content');
+            allReports.forEach(report => report.classList.remove('active'));
+            
+            // Show dashboard
+            document.getElementById('no-report-view').style.display = 'flex';
+            
+            // Clear active states
+            const allItems = document.querySelectorAll('.report-item, .sub-report-item');
+            allItems.forEach(item => item.classList.remove('active'));
+            
+            // Update header
+            document.querySelector('.content-title').textContent = 'Asset Management Dashboard';
+            document.querySelector('.content-subtitle').textContent = 'Manage company assets, vehicles, and maintenance records';
+            
+            // Hide print button
+            const printBtn = document.querySelector('.print-btn');
+            if (printBtn) {
+                printBtn.style.display = 'none';
+            }
+        }
+        
+        function openExternalReport(filename, reportTitle) {
+            // Hide system sidebar if open
+            hideSystemSidebar();
+            
+            // Hide no report view
+            document.getElementById('no-report-view').style.display = 'none';
+            
+            // Hide all report content
+            const allReports = document.querySelectorAll('.report-content');
+            allReports.forEach(report => report.classList.remove('active'));
+            
+            // Update active state in sidebar
+            const allItems = document.querySelectorAll('.report-item, .sub-report-item');
+            allItems.forEach(item => item.classList.remove('active'));
+            if (event.target) {
+                event.target.classList.add('active');
+            }
+            
+            // Create or update iframe content
+            let iframeContent = document.getElementById('iframe-content');
+            
+            let reportName = reportTitle || filename.replace('.html', '');
+            let breadcrumb = 'Assets';
+            let overviewFunction = 'showDashboard()';
+            
+            iframeContent.innerHTML = `
+                <div class="report-navigation">
+                    <div class="nav-links">
+                        <a href="#" class="nav-link" onclick="showDashboard()">Back to Dashboard</a>
+                        <span class="nav-separator">|</span>
+                        <a href="#" class="nav-link" onclick="${overviewFunction}">${breadcrumb}</a>
+                        <span class="nav-separator">|</span>
+                        <span style="color: #666; font-weight: 500;">${reportName}</span>
+                    </div>
+                </div>
+                <div class="iframe-container">
+                    <iframe src="${filename}" title="${reportName}"></iframe>
+                </div>
+            `;
+            iframeContent.classList.add('active');
+            
+            // Update header
+            document.querySelector('.content-title').textContent = reportName;
+            document.querySelector('.content-subtitle').textContent = 'Asset management detailed view';
+            
+            // Show print button
+            const printBtn = document.querySelector('.print-btn');
+            if (printBtn) {
+                printBtn.style.display = 'inline-block';
+            }
+        }
+        
+        // Function for Vehicle Maintenance reports
+        function openVehicleMaintenanceReport(filename, reportTitle) {
+            // Hide system sidebar if open
+            hideSystemSidebar();
+            
+            // Hide no report view
+            document.getElementById('no-report-view').style.display = 'none';
+            
+            // Hide all report content
+            const allReports = document.querySelectorAll('.report-content');
+            allReports.forEach(report => report.classList.remove('active'));
+            
+            // Update active state in sidebar
+            const allItems = document.querySelectorAll('.report-item, .sub-report-item');
+            allItems.forEach(item => item.classList.remove('active'));
+            if (event.target) {
+                event.target.classList.add('active');
+            }
+            
+            // Create or update iframe content
+            let iframeContent = document.getElementById('iframe-content');
+            
+            let reportName = reportTitle || filename.replace('.html', '');
+            let breadcrumb = 'Vehicle Maintenance';
+            let overviewFunction = 'showDashboard()';
+            
+            iframeContent.innerHTML = `
+                <div class="report-navigation">
+                    <div class="nav-links">
+                        <a href="#" class="nav-link" onclick="showDashboard()">Back to Dashboard</a>
+                        <span class="nav-separator">|</span>
+                        <a href="#" class="nav-link" onclick="${overviewFunction}">${breadcrumb}</a>
+                        <span class="nav-separator">|</span>
+                        <span style="color: #666; font-weight: 500;">${reportName}</span>
+                    </div>
+                </div>
+                <div class="iframe-container">
+                    <iframe src="${filename}" title="${reportName}"></iframe>
+                </div>
+            `;
+            iframeContent.classList.add('active');
+            
+            // Update header
+            document.querySelector('.content-title').textContent = reportName;
+            document.querySelector('.content-subtitle').textContent = 'Vehicle maintenance & servicing expenses';
+            
+            // Show print button
+            const printBtn = document.querySelector('.print-btn');
+            if (printBtn) {
+                printBtn.style.display = 'inline-block';
+            }
+        }
+
+        // Function for Vehicle Road Tax & Insurance reports
+        function openVehicleRoadTaxReport(filename, reportTitle) {
+            // Hide system sidebar if open
+            hideSystemSidebar();
+            
+            // Hide no report view
+            document.getElementById('no-report-view').style.display = 'none';
+            
+            // Hide all report content
+            const allReports = document.querySelectorAll('.report-content');
+            allReports.forEach(report => report.classList.remove('active'));
+            
+            // Update active state in sidebar
+            const allItems = document.querySelectorAll('.report-item, .sub-report-item');
+            allItems.forEach(item => item.classList.remove('active'));
+            if (event.target) {
+                event.target.classList.add('active');
+            }
+            
+            // Create or update iframe content
+            let iframeContent = document.getElementById('iframe-content');
+            
+            let reportName = reportTitle || filename.replace('.html', '');
+            let breadcrumb = 'Vehicle Road Tax & Insurance';
+            let overviewFunction = 'showDashboard()';
+            
+            iframeContent.innerHTML = `
+                <div class="report-navigation">
+                    <div class="nav-links">
+                        <a href="#" class="nav-link" onclick="showDashboard()">Back to Dashboard</a>
+                        <span class="nav-separator">|</span>
+                        <a href="#" class="nav-link" onclick="${overviewFunction}">${breadcrumb}</a>
+                        <span class="nav-separator">|</span>
+                        <span style="color: #666; font-weight: 500;">${reportName}</span>
+                    </div>
+                </div>
+                <div class="iframe-container">
+                    <iframe src="${filename}" title="${reportName}"></iframe>
+                </div>
+            `;
+            iframeContent.classList.add('active');
+            
+            // Update header
+            document.querySelector('.content-title').textContent = reportName;
+            document.querySelector('.content-subtitle').textContent = 'Vehicle road tax & insurance expenses';
+            
+            // Show print button
+            const printBtn = document.querySelector('.print-btn');
+            if (printBtn) {
+                printBtn.style.display = 'inline-block';
+            }
+        }
+        
+        function printCurrentReport() {
+            const activeReport = document.querySelector('.report-content.active');
+            if (activeReport && activeReport.id === 'iframe-content') {
+                const iframe = activeReport.querySelector('iframe');
+                if (iframe) {
+                    try {
+                        iframe.contentWindow.print();
+                    } catch (e) {
+                        // Fallback to printing the entire page
+                        window.print();
+                    }
+                }
+            } else {
+                window.print();
+            }
+        }
+        
+        // Close system sidebar when clicking outside
+        document.addEventListener('click', function(event) {
+            const systemSidebar = document.getElementById('systemSidebar');
+            const systemTitle = document.getElementById('systemTitle');
+            
+            if (systemSidebar.classList.contains('show') && 
+                !systemSidebar.contains(event.target) && 
+                !systemTitle.contains(event.target)) {
+                hideSystemSidebar();
+            }
+        });
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-expand assets category for better UX
+            const assetsCategory = document.querySelector('.report-category');
+            if (assetsCategory) {
+                const categoryId = assetsCategory.querySelector('.report-items').id;
+                toggleCategory(categoryId);
+            }
+        });
+    </script>
+</body>
+</html>
